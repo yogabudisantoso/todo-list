@@ -3,7 +3,6 @@ Interactive API documentation is available at http://localhost:3000/api-docs whe
 
 The documentation provides detailed information about all endpoints, request parameters, and response formats.
 
-<<<<<<< HEAD
 ## Features
 - User authentication (register, login) with JWT
 - CRUD operations for todo items
@@ -48,4 +47,3 @@ cd talent-growth
 
 ### Link Swagger API Documentation
 - https://app.swaggerhub.com/apis-docs/YOGABUDISANTOSO25/talent-growth_api/1.0.0
->>>>>>> 027715d99a17b2e394b08cd32a29fa95be67da09
