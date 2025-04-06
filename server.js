@@ -7,6 +7,7 @@ dotenv.config();
 
 // Import routes
 const itemRoutes = require('./routes/items');
+const authRoutes = require('./routes/auth');
 
 // Initialize express app
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.json());
 
 // Routes
 app.use('/items', itemRoutes);
+app.use('/auth', authRoutes);
 
 // Default route
 app.get('/', (req, res) => {
