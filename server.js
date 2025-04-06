@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const errorHandler = require('./middleware/errorHandler');
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,14 @@ app.use('/auth', authRoutes);
 // Default route
 app.get('/', (req, res) => {
   res.send('To-Do List API is running');
+});
+
+// Error handling middleware (must be after routes)
+app.use(errorHandler);
+
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // Start server

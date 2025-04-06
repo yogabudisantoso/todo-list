@@ -4,18 +4,14 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const auth = require('../middleware/auth');
+const { registerValidation, loginValidation } = require('../middleware/validators');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 // Register a new user
-router.post('/register', async (req, res) => {
+router.post('/register', registerValidation, async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please enter all fields' });
-    }
 
     // Check if user already exists
     const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -38,20 +34,14 @@ router.post('/register', async (req, res) => {
       userId: result.insertId
     });
   } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    next(error);
   }
 });
 
 // Login user
-router.post('/login', async (req, res) => {
+router.post('/login', loginValidation, async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please enter all fields' });
-    }
 
     // Check if user exists
     const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -82,24 +72,24 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error logging in:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    next(error);
   }
 });
 
 // Get user profile (protected route)
-router.get('/profile', auth, async (req, res) => {
+router.get('/profile', auth, async (req, res, next) => {
   try {
     const [users] = await db.query('SELECT id, email, created_at FROM users WHERE id = ?', [req.user.id]);
     
     if (users.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
     }
     
     res.json(users[0]);
   } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    next(error);
   }
 });
 

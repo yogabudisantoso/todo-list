@@ -2,20 +2,20 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const auth = require('../middleware/auth');
+const { itemValidation } = require('../middleware/validators');
 
 // GET all items (for authenticated user)
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req, res, next) => {
   try {
     const [rows] = await db.query('SELECT * FROM items WHERE user_id = ?', [req.user.id]);
     res.json(rows);
   } catch (error) {
-    console.error('Error fetching items:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    next(error);
   }
 });
 
 // GET a specific item by ID (for authenticated user)
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, async (req, res, next) => {
   try {
     const [rows] = await db.query(
       'SELECT * FROM items WHERE id = ? AND user_id = ?', 
@@ -23,24 +23,21 @@ router.get('/:id', auth, async (req, res) => {
     );
     
     if (rows.length === 0) {
-      return res.status(404).json({ message: 'Item not found' });
+      const error = new Error('Item not found');
+      error.statusCode = 404;
+      throw error;
     }
     
     res.json(rows[0]);
   } catch (error) {
-    console.error('Error fetching item:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    next(error);
   }
 });
 
 // POST a new item (for authenticated user)
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, itemValidation, async (req, res, next) => {
   try {
     const { name, description, status } = req.body;
-    
-    if (!name) {
-      return res.status(400).json({ message: 'Name is required' });
-    }
     
     const [result] = await db.query(
       'INSERT INTO items (name, description, status, user_id) VALUES (?, ?, ?, ?)',
@@ -52,13 +49,12 @@ router.post('/', auth, async (req, res) => {
       id: result.insertId 
     });
   } catch (error) {
-    console.error('Error creating item:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    next(error);
   }
 });
 
 // PUT (update) an item (for authenticated user)
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, itemValidation, async (req, res, next) => {
   try {
     const { name, description, status } = req.body;
     const id = req.params.id;
@@ -70,7 +66,9 @@ router.put('/:id', auth, async (req, res) => {
     );
     
     if (checkResult.length === 0) {
-      return res.status(404).json({ message: 'Item not found or not authorized' });
+      const error = new Error('Item not found or not authorized');
+      error.statusCode = 404;
+      throw error;
     }
     
     await db.query(
@@ -80,13 +78,12 @@ router.put('/:id', auth, async (req, res) => {
     
     res.json({ message: 'Item updated successfully' });
   } catch (error) {
-    console.error('Error updating item:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    next(error);
   }
 });
 
 // DELETE an item (for authenticated user)
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, async (req, res, next) => {
   try {
     const id = req.params.id;
     
@@ -97,15 +94,16 @@ router.delete('/:id', auth, async (req, res) => {
     );
     
     if (checkResult.length === 0) {
-      return res.status(404).json({ message: 'Item not found or not authorized' });
+      const error = new Error('Item not found or not authorized');
+      error.statusCode = 404;
+      throw error;
     }
     
     await db.query('DELETE FROM items WHERE id = ? AND user_id = ?', [id, req.user.id]);
     
     res.json({ message: 'Item deleted successfully' });
   } catch (error) {
-    console.error('Error deleting item:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    next(error);
   }
 });
 
