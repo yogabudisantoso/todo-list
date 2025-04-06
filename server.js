@@ -18,10 +18,47 @@ app.use(cors());
 app.use(express.json());
 
 // Add this near the top with other imports
-const { specs, swaggerUi } = require('./swagger');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+// Define Swagger options
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Talent Growth API',
+      version: '1.0.0',
+      description: 'A RESTful API for managing todo items with user authentication',
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000',
+        description: 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  apis: ['./routes/*.js'], // Path to the API routes files
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
 
 // Add this after your other middleware setup but before routes
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// Add this to expose the swagger.json file
+app.get('/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerDocs);
+});
 
 // Routes
 app.use('/items', itemRoutes);
