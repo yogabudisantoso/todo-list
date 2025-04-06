@@ -28,6 +28,11 @@ async function initializeDatabase() {
     await connection.end();
     
     // Create users table
+    // In your initializeDatabase function:
+    await pool.query('DROP TABLE IF EXISTS items');
+    await pool.query('DROP TABLE IF EXISTS users');
+    
+    // Then create the tables again with the correct schema
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,7 +42,6 @@ async function initializeDatabase() {
       )
     `);
     
-    // Create items table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS items (
         id INT AUTO_INCREMENT PRIMARY KEY,

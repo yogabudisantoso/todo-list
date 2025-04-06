@@ -6,10 +6,23 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 function auth(req, res, next) {
-  // Get token from header
-  const token = req.header('x-auth-token');
-
-  // Check if no token
+  // Get token from Authorization header
+  const authHeader = req.header('Authorization');
+  
+  // Check if no auth header
+  if (!authHeader) {
+    return res.status(401).json({ message: 'No token, authorization denied' });
+  }
+  
+  // Check if it's a Bearer token
+  if (!authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Invalid token format, use Bearer token' });
+  }
+  
+  // Extract the token
+  const token = authHeader.split(' ')[1];
+  
+  // Check if token exists
   if (!token) {
     return res.status(401).json({ message: 'No token, authorization denied' });
   }

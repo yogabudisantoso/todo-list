@@ -4,16 +4,46 @@ const db = require('../config/db');
 const auth = require('../middleware/auth');
 const { itemValidation } = require('../middleware/validators');
 
-// GET all items (for authenticated user)
+// GET all items (for authenticated user) with pagination
 router.get('/', auth, async (req, res, next) => {
   try {
-    const [rows] = await db.query('SELECT * FROM items WHERE user_id = ?', [req.user.id]);
-    res.json(rows);
+    // Get pagination parameters from query string
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    // Calculate offset
+    const offset = (page - 1) * limit;
+    
+    // Get total count of items for the user
+    const [countResult] = await db.query(
+      'SELECT COUNT(*) as total FROM items WHERE user_id = ?', 
+      [req.user.id]
+    );
+    const total = countResult[0].total;
+    
+    // Calculate total pages
+    const totalPages = Math.ceil(total / limit);
+    
+    // Get paginated items
+    const [rows] = await db.query(
+      'SELECT * FROM items WHERE user_id = ? LIMIT ? OFFSET ?', 
+      [req.user.id, limit, offset]
+    );
+    
+    // Return paginated response with metadata
+    res.json({
+      items: rows,
+      total,
+      page,
+      totalPages,
+      limit
+    });
   } catch (error) {
     next(error);
   }
 });
 
+// The rest of the routes remain unchanged
 // GET a specific item by ID (for authenticated user)
 router.get('/:id', auth, async (req, res, next) => {
   try {
