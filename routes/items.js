@@ -4,6 +4,304 @@ const db = require('../config/db');
 const auth = require('../middleware/auth');
 const { itemValidation } = require('../middleware/validators');
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Item:
+ *       type: object
+ *       required:
+ *         - name
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: The auto-generated id of the item
+ *         name:
+ *           type: string
+ *           description: The name of the item
+ *         description:
+ *           type: string
+ *           description: The description of the item
+ *         status:
+ *           type: string
+ *           description: The status of the item
+ *           enum: [pending, in_progress, completed]
+ *         user_id:
+ *           type: integer
+ *           description: The user id who owns this item
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           description: The date the item was created
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *           description: The date the item was last updated
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Items
+ *   description: Todo items management
+ */
+
+/**
+ * @swagger
+ * /items:
+ *   get:
+ *     summary: Get all items with pagination
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: List of items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Items retrieved successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       title:
+ *                         type: string
+ *                         example: Finish project
+ *                       description:
+ *                         type: string
+ *                         example: Complete backend API
+ *                       status:
+ *                         type: string
+ *                         example: pending
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: 2023-04-05T12:00:00.000Z
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       example: 10
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ */
+
+/**
+ * @swagger
+ * /items/{id}:
+ *   get:
+ *     summary: Get a specific item by ID
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Item ID
+ *     responses:
+ *       200:
+ *         description: Item details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Item'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       404:
+ *         description: Item not found
+ */
+
+/**
+ * @swagger
+ * /items:
+ *   post:
+ *     summary: Create a new item
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Item name
+ *               description:
+ *                 type: string
+ *                 description: Item description
+ *               status:
+ *                 type: string
+ *                 enum: [pending, in_progress, completed]
+ *                 default: pending
+ *                 description: Item status
+ *     responses:
+ *       201:
+ *         description: Item created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Todo item created successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     title:
+ *                       type: string
+ *                       example: Finish project
+ *                     description:
+ *                       type: string
+ *                       example: Complete backend API
+ *                     status:
+ *                       type: string
+ *                       example: pending
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: 2023-04-05T12:00:00.000Z
+ *                     userId:
+ *                       type: integer
+ *                       example: 1
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ */
+
+/**
+ * @swagger
+ * /items/{id}:
+ *   put:
+ *     summary: Update an item
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Item ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Item name
+ *               description:
+ *                 type: string
+ *                 description: Item description
+ *               status:
+ *                 type: string
+ *                 enum: [pending, in_progress, completed]
+ *                 description: Item status
+ *     responses:
+ *       200:
+ *         description: Item updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Item updated successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       404:
+ *         description: Item not found or not authorized
+ */
+
+/**
+ * @swagger
+ * /items/{id}:
+ *   delete:
+ *     summary: Delete an item
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Item ID
+ *     responses:
+ *       200:
+ *         description: Item deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Item deleted successfully
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       404:
+ *         description: Item not found or not authorized
+ */
+
 // GET all items (for authenticated user) with pagination
 router.get('/', auth, async (req, res, next) => {
   try {

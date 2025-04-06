@@ -9,6 +9,7 @@ A RESTful API for managing todo items with user authentication, built with Expre
 - Pagination for listing items
 - Input validation and error handling
 - Protected routes with authentication middleware
+- Interactive API documentation with Swagger
 
 ## Technologies Used
 
@@ -18,6 +19,7 @@ A RESTful API for managing todo items with user authentication, built with Expre
 - JWT for authentication
 - bcrypt for password hashing
 - express-validator for input validation
+- Swagger for API documentation
 
 ## Prerequisites
 

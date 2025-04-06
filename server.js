@@ -17,6 +17,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Add this near the top with other imports
+const { specs, swaggerUi } = require('./swagger');
+
+// Add this after your other middleware setup but before routes
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 // Routes
 app.use('/items', itemRoutes);
 app.use('/auth', authRoutes);
