@@ -30,13 +30,26 @@ router.get('/', auth, async (req, res, next) => {
       [req.user.id, limit, offset]
     );
     
+    // Format the items to match the requested structure
+    const formattedItems = rows.map(item => ({
+      id: item.id,
+      title: item.name,
+      description: item.description,
+      status: item.status,
+      createdAt: item.created_at
+    }));
+    
     // Return paginated response with metadata
     res.json({
-      items: rows,
-      total,
-      page,
-      totalPages,
-      limit
+      status: "success",
+      message: "Items retrieved successfully",
+      data: formattedItems,
+      pagination: {
+        total,
+        page,
+        totalPages,
+        limit
+      }
     });
   } catch (error) {
     next(error);
@@ -74,9 +87,25 @@ router.post('/', auth, itemValidation, async (req, res, next) => {
       [name, description, status || 'pending', req.user.id]
     );
     
+    // Fetch the newly created item to include in response
+    const [items] = await db.query(
+      'SELECT id, name, description, status, created_at, user_id FROM items WHERE id = ?',
+      [result.insertId]
+    );
+    
+    const item = items[0];
+    
     res.status(201).json({ 
-      message: 'Item created successfully', 
-      id: result.insertId 
+      status: "success",
+      message: "Todo item created successfully",
+      data: {
+        id: item.id,
+        title: item.name,
+        description: item.description,
+        status: item.status,
+        createdAt: item.created_at,
+        userId: item.user_id
+      }
     });
   } catch (error) {
     next(error);

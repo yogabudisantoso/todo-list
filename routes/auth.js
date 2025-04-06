@@ -16,7 +16,11 @@ router.post('/register', registerValidation, async (req, res, next) => {
     // Check if user already exists
     const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (existingUsers.length > 0) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ 
+        status: "error", 
+        message: "User already exists",
+        data: null
+      });
     }
 
     // Hash password
@@ -30,8 +34,14 @@ router.post('/register', registerValidation, async (req, res, next) => {
     );
 
     res.status(201).json({ 
-      message: 'User registered successfully',
-      userId: result.insertId
+      status: "success",
+      message: "User registered successfully",
+      data: {
+        user: {
+          id: result.insertId,
+          email: email
+        }
+      }
     });
   } catch (error) {
     next(error);
@@ -46,7 +56,11 @@ router.post('/login', loginValidation, async (req, res, next) => {
     // Check if user exists
     const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (users.length === 0) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ 
+        status: "error", 
+        message: "Invalid credentials",
+        data: null
+      });
     }
 
     const user = users[0];
@@ -54,7 +68,11 @@ router.post('/login', loginValidation, async (req, res, next) => {
     // Validate password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ 
+        status: "error", 
+        message: "Invalid credentials",
+        data: null
+      });
     }
 
     // Create and sign JWT
@@ -65,10 +83,14 @@ router.post('/login', loginValidation, async (req, res, next) => {
     );
 
     res.json({
-      token,
-      user: {
-        id: user.id,
-        email: user.email
+      status: "success",
+      message: "Login successful",
+      data: {
+        user: {
+          id: user.id,
+          email: user.email
+        },
+        token: token
       }
     });
   } catch (error) {

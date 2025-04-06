@@ -21,11 +21,6 @@ app.use(express.json());
 app.use('/items', itemRoutes);
 app.use('/auth', authRoutes);
 
-// Default route
-app.get('/', (req, res) => {
-  res.send('To-Do List API is running');
-});
-
 // Error handling middleware (must be after routes)
 app.use(errorHandler);
 
